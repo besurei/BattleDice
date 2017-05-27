@@ -233,9 +233,9 @@ public class Player : MonoBehaviour {
         SoundManager.Play(SoundManager.SE_TYPE.POWER_UP);
         atackUp += 2;
         if( this.gameObject.name == "Player" )
-            battleManager.GetComponent<BattleManager>().SetMessage("こはく" + "の\nこうげきりょくが" + healNum[0]+"あがった！");
+            battleManager.GetComponent<BattleManager>().SetMessage("ゆうこ" + "の\nこうげきりょくが" + healNum[0]+"あがった！");
         else if ( this.gameObject.name == "Enemy" )
-            battleManager.GetComponent<BattleManager>().SetMessage("ゆうこ" + "の\nこうげきりょくが" + healNum[0] + "あがった！");
+            battleManager.GetComponent<BattleManager>().SetMessage("こはく" + "の\nこうげきりょくが" + healNum[0] + "あがった！");
     }
 
     public void PlayHealParticle()
