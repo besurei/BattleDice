@@ -22,9 +22,22 @@ public class Player : MonoBehaviour {
     [SerializeField]
     protected GameObject battleManager;
 
+    [SerializeField]
+    protected Slider slider;
+
+    [SerializeField]
+    protected Image barImage;
+
+    [SerializeField]
+    protected ParticleSystem healParticle;
+    [SerializeField]
+    protected ParticleSystem atackUpParticle;
+
     protected Animator anim;
 
     private int atackUp = 0;
+    private int maxHP;
+    private bool bDanger = false;
 
     protected void OnCallChangeFace()
     {
@@ -34,8 +47,15 @@ public class Player : MonoBehaviour {
 
         // HP表示初期化
         hpNumText.text = hp.ToString();
+        maxHP = hp;
+
+        healParticle.Stop();
+        atackUpParticle.Stop();
+        barImage.color = Color.green;
 
         anim = GetComponent<Animator>();
+
+        DontDestroyOnLoad(this.gameObject);
 
     }
 
@@ -44,7 +64,7 @@ public class Player : MonoBehaviour {
     {
 
         GameObject dice = Instantiate(prefDice, new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z + 0.1f), new Quaternion(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360), 0));
-        dice.GetComponent<Rigidbody>().AddForce(0, Random.Range(160, 200), 130);
+        dice.GetComponent<Rigidbody>().AddForce(0, Random.Range(160, 170), 130);
         dice.GetComponent<Rigidbody>().maxAngularVelocity = 60;
         dice.GetComponent<Rigidbody>().AddTorque(Random.Range(50, 60), Random.Range(50, 60), Random.Range(50, 60), ForceMode.Force);
         StartCoroutine(GetDiceNum(dice));
@@ -63,8 +83,15 @@ public class Player : MonoBehaviour {
             diceNum = 0;
         }
 
+        SoundManager.Play(SoundManager.SE_TYPE.SELECTED_NUM);
+        diceText.GetComponent<Animator>().SetTrigger("SelectedNum");
         diceText.text = (diceNum).ToString();
         StartCoroutine( battleManager.GetComponent<BattleManager>().AtackFase(diceNum) );
+    }
+
+    public void Miss()
+    {
+        anim.SetTrigger("Miss");
     }
 
     // 攻撃する
@@ -91,19 +118,17 @@ public class Player : MonoBehaviour {
             default:
                 break;
         }
+
+        SoundManager.Play(SoundManager.SE_TYPE.ATACK);
+
     }
 
     // ダメージを受ける
-    public void Dameged(BattleManager.ATACK_TYPE in_atackType)
+    public int Dameged(BattleManager.ATACK_TYPE in_atackType)
     {
         int rand = Random.Range(0, 99);
 
         int multiNum = 1;
-        //if(rand <= 10)
-        //{
-        //    multiNum = 2;
-        //}
-
         // 相手側の攻撃パターンによりダメージを受ける
         switch (in_atackType)
         {
@@ -137,21 +162,47 @@ public class Player : MonoBehaviour {
         }
         if (hp <= 0) {
             hp = 0;
-            StartCoroutine(battleManager.GetComponent<BattleManager>().LoadResult());
+            //StartCoroutine(battleManager.GetComponent<BattleManager>().LoadResult());
+            anim.SetTrigger("Lose");
+            StopAllCoroutines();
+            return 0;
         }
         hpNumText.text = hp.ToString();
+
+        slider.GetComponent<Slider>().value = hp;
+        if (hp <= 10 & hp > 5)
+            barImage.color = Color.yellow;
+        else if (hp <= 5)
+        {
+            if (!bDanger)
+            {
+                bDanger = true;
+                SoundManager.ChangeBGM();
+            }
+            barImage.color = Color.red;
+        }
+        else if (hp <= 0)
+            barImage.color = Color.clear;
+
+        SoundManager.Play(SoundManager.SE_TYPE.DAMAGED);
+        return 1;
     }
 
     // 回復する
     public void Heal(BattleManager.ATACK_TYPE in_atackType)
     {
+        SoundManager.Play(SoundManager.SE_TYPE.HEAL);
+        healParticle.Play();
+
         // 相手側の攻撃パターンによりダメージを受ける
         switch (in_atackType)
         {
             case BattleManager.ATACK_TYPE.HEAL02:
+                battleManager.GetComponent<BattleManager>().SetMessage("HPが　"+healNum[0]+"かいふくした！");
                 hp += healNum[0];
                 break;
             case BattleManager.ATACK_TYPE.HEAL05:
+                battleManager.GetComponent<BattleManager>().SetMessage("HPが　" + healNum[1] + "かいふくした！");
                 hp += healNum[1];
                 break;
             default:
@@ -160,12 +211,34 @@ public class Player : MonoBehaviour {
 
         if (hp > 20)
             hp = 20;
+        if(bDanger && hp > 5)
+        {
+            bDanger = false;
+        }
         hpNumText.text = hp.ToString();
+        slider.GetComponent<Slider>().value = hp;
+
+        if (hp > 5 && hp <= 10)
+            ChangeBarColor(Color.yellow);
+        else if (hp > 10)
+            ChangeBarColor(Color.green);
 
     }
 
     public void AtackUp()
     {
+        SoundManager.Play(SoundManager.SE_TYPE.POWER_UP);
         atackUp += 2;
+        battleManager.GetComponent<BattleManager>().SetMessage("こうげきりょくが　" + healNum[0]+"あがった！");
+    }
+
+    public void PlayHealParticle()
+    {
+        atackUpParticle.Play();
+    }
+
+    void ChangeBarColor( Color in_color )
+    {
+        barImage.color = in_color;
     }
 }

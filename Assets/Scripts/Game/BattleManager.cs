@@ -49,16 +49,6 @@ public class BattleManager : MonoBehaviour {
 		
 	}
 
-    IEnumerator StandbyCameraMove()
-    {
-        standbyCamera_isRunning = true;
-        yield return new WaitForSeconds(5);
-        int rand = (int)Random.Range(1, 3);
-        camera[rand].GetComponent<Camera>().enabled = true;
-        yield return new WaitForSeconds(3);
-        camera[rand].GetComponent<Camera>().enabled = false;
-    }
-
     // スタンバイフェイズ
     IEnumerator StandbyFase()
     {
@@ -66,20 +56,17 @@ public class BattleManager : MonoBehaviour {
         if (turnType == TURN_TYPE.TURN_PLAYER)
         {
             // 入力待ち
-            while (!Input.GetKeyDown(KeyCode.Return))
+            while (!Input.GetMouseButtonDown(0) )
             {
+                SetMessage("きみのターンだ！");
                 yield return 0;
-                if (!standbyCamera_isRunning)
-                    StartCoroutine(StandbyCameraMove() );
             }
-
-            StopCoroutine(StandbyCameraMove());
-            standbyCamera_isRunning = false;
 
             player.GetComponent<Player>().CreateDice();
         }
         else if(turnType == TURN_TYPE.TURN_ENEMY)
         {
+            SetMessage("てきのターンだ！");
             yield return new WaitForSeconds(2);
 
             enemy.GetComponent<Enemy>().CreateDice();
@@ -95,24 +82,23 @@ public class BattleManager : MonoBehaviour {
         Debug.Log(atackType);
 
         // 攻撃カメラ有効
-        //SetActiveCamera(1);
-        //yield return new WaitForSeconds(1);
         SetActiveCamera(4);
-        yield return new WaitForSeconds(2.5f);
+        yield return new WaitForSeconds(0.7f);
 
-        if(atackType == ATACK_TYPE.MISS01 || atackType == ATACK_TYPE.MISS02)
+        if (atackType == ATACK_TYPE.MISS01 || atackType == ATACK_TYPE.MISS02)
         {
+            SoundManager.Play(SoundManager.SE_TYPE.MISS);
             if (turnType == TURN_TYPE.TURN_PLAYER)
             {
-                message.text = "ミス！";
-                SetActiveCamera(1);
-                yield return new WaitForSeconds(3);
+                SetMessage("ミス！");
+                player.GetComponent<Player>().Miss();
+                yield return new WaitForSeconds(1.0f);
             }
             else if (turnType == TURN_TYPE.TURN_ENEMY)
             {
-                message.text = "ミス！";
-                SetActiveCamera(2);
-                yield return new WaitForSeconds(3);
+                SetMessage("ミス！");
+                enemy.GetComponent<Enemy>().Miss();
+                yield return new WaitForSeconds(1.0f);
             }
         }
         // 攻撃
@@ -123,41 +109,52 @@ public class BattleManager : MonoBehaviour {
             SetActiveCamera(3);
             if (turnType == TURN_TYPE.TURN_PLAYER)
             {
+                SetMessage("こはくの\nパンチ　こうげき！");
                 player.GetComponent<Player>().Atack(atackType);
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1f);
                 SetActiveCamera(2);
                 enemy.GetComponent<Enemy>().Dameged(atackType);
             }
-            else if( turnType == TURN_TYPE.TURN_ENEMY )
+            else if (turnType == TURN_TYPE.TURN_ENEMY)
             {
+                SetMessage("ゆうこの\nパンチ　こうげき！");
                 enemy.GetComponent<Enemy>().Atack(atackType);
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1f);
                 player.GetComponent<Player>().Dameged(atackType);
             }
+            yield return new WaitForSeconds(2f);
         }
         // 回復
-        else if( atackType == ATACK_TYPE.HEAL02 || atackType == ATACK_TYPE.HEAL05 )
+        else if (atackType == ATACK_TYPE.HEAL02 || atackType == ATACK_TYPE.HEAL05)
         {
             if (turnType == TURN_TYPE.TURN_PLAYER)
             {
+                SetMessage("こはくの\nかいふくまほう！");
                 player.GetComponent<Player>().Heal(atackType);
             }
             else if (turnType == TURN_TYPE.TURN_ENEMY)
             {
+                SetMessage("ゆうこの\nかいふくまほう！");
                 enemy.GetComponent<Enemy>().Heal(atackType);
             }
+            yield return new WaitForSeconds(2f);
         }
         // 攻撃アップ
-        else if( atackType == ATACK_TYPE.ATACKUP)
+        else if (atackType == ATACK_TYPE.ATACKUP)
         {
             if (turnType == TURN_TYPE.TURN_PLAYER)
             {
+                SetMessage("こはくの\nかわいいポーズ！");
+                player.GetComponent<Player>().PlayHealParticle();
                 enemy.GetComponent<Enemy>().AtackUp();
             }
             else if (turnType == TURN_TYPE.TURN_ENEMY)
             {
+                SetMessage("ゆうこの\nかわいいポーズ！");
+                enemy.GetComponent<Enemy>().PlayHealParticle();
                 player.GetComponent<Player>().AtackUp();
             }
+            yield return new WaitForSeconds(2f);
         }
 
         if (turnType == TURN_TYPE.TURN_PLAYER)

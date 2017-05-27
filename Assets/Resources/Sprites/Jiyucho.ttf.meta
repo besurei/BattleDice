@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 6c906d0422493c24183ee0c6452673bf
+timeCreated: 1495815877
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Jiyucho
+  fontNames:
+  - Jiyucho
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

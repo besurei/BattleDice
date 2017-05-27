@@ -15,7 +15,7 @@ public class Enemy : Player{
     {
     
         GameObject dice = Instantiate(prefDice, new Vector3(transform.position.x, transform.position.y + 0.5f, transform.position.z - 0.1f), new Quaternion(Random.Range(0, 360), Random.Range(0, 360), Random.Range(0, 360), 0));
-        dice.GetComponent<Rigidbody>().AddForce(0, Random.Range(160, 200), -130);
+        dice.GetComponent<Rigidbody>().AddForce(0, Random.Range(160, 170), -130);
         dice.GetComponent<Rigidbody>().maxAngularVelocity = 60;
         dice.GetComponent<Rigidbody>().AddTorque(Random.Range(50, 60), Random.Range(50, 60), Random.Range(50, 60), ForceMode.Force);
         StartCoroutine(GetDiceNum(dice));
