@@ -18,6 +18,7 @@ public class SoundManager : MonoBehaviour {
         DANGER,
         POWER_UP,
         HEAL,
+        SELECT,
 
     };
 
@@ -74,6 +75,10 @@ public class SoundManager : MonoBehaviour {
 
             case SE_TYPE.HEAL:
                 audioSource.clip = Resources.Load<AudioClip>("Sounds/Heal");
+                break;
+
+            case SE_TYPE.SELECT:
+                audioSource.clip = Resources.Load<AudioClip>("Sounds/Select");
                 break;
         }
 

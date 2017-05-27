@@ -15,7 +15,7 @@ public class BattleManager : MonoBehaviour {
     private Text message;
 
     [SerializeField]
-    private Camera[] camera = new Camera[3];
+    private GameObject[] resultPop = new GameObject[1];
 
     // ターンタイプ
     public enum TURN_TYPE{
@@ -42,6 +42,7 @@ public class BattleManager : MonoBehaviour {
     ATACK_TYPE atackType;
 
     private bool standbyCamera_isRunning = false;
+    private bool bClear = false;
 
 	void Awake () {
 
@@ -52,7 +53,7 @@ public class BattleManager : MonoBehaviour {
     // スタンバイフェイズ
     IEnumerator StandbyFase()
     {
-        SetActiveCamera(0);
+        //SetActiveCamera(0);
         if (turnType == TURN_TYPE.TURN_PLAYER)
         {
             // 入力待ち
@@ -81,8 +82,6 @@ public class BattleManager : MonoBehaviour {
 
         Debug.Log(atackType);
 
-        // 攻撃カメラ有効
-        SetActiveCamera(4);
         yield return new WaitForSeconds(0.7f);
 
         if (atackType == ATACK_TYPE.MISS01 || atackType == ATACK_TYPE.MISS02)
@@ -106,18 +105,14 @@ public class BattleManager : MonoBehaviour {
             || atackType == ATACK_TYPE.ATACK04 || atackType == ATACK_TYPE.ATACK06
             || atackType == ATACK_TYPE.ATACK08)
         {
-            SetActiveCamera(3);
             if (turnType == TURN_TYPE.TURN_PLAYER)
             {
-                SetMessage("こはくの\nパンチ　こうげき！");
                 player.GetComponent<Player>().Atack(atackType);
                 yield return new WaitForSeconds(1f);
-                SetActiveCamera(2);
                 enemy.GetComponent<Enemy>().Dameged(atackType);
             }
             else if (turnType == TURN_TYPE.TURN_ENEMY)
             {
-                SetMessage("ゆうこの\nパンチ　こうげき！");
                 enemy.GetComponent<Enemy>().Atack(atackType);
                 yield return new WaitForSeconds(1f);
                 player.GetComponent<Player>().Dameged(atackType);
@@ -164,8 +159,30 @@ public class BattleManager : MonoBehaviour {
 
         Destroy(GameObject.FindGameObjectWithTag("Dice"));
 
-        StartCoroutine( StandbyFase() );
+        if(!bClear)
+            StartCoroutine( StandbyFase() );
+
         yield return null;
+    }
+
+    public IEnumerator Result( string in_Name )
+    {
+
+        if(in_Name == "Player")
+        {
+            SetMessage("まけちゃった・・・");
+            resultPop[1].SetActive(true);
+        }
+        else if(in_Name == "Enemy")
+        {
+            SetMessage("ゆうことのしょうぶにかった！");
+            resultPop[0].SetActive(true);
+
+        }
+        yield return new WaitForSeconds(4.5f);
+
+        SimpleSceneFader.ChangeSceneWithFade("Title", 1.0f);
+
     }
 
     public void SetDiceNum( int in_diceNum )
@@ -180,15 +197,9 @@ public class BattleManager : MonoBehaviour {
         SimpleSceneFader.ChangeSceneWithFade("Result", 1.0f);
     }
 
-    void SetActiveCamera( int num )
+    public void SetClear( bool in_clear )
     {
-        for( int i=1; i<3; i++)
-        {
-            if (i == num)
-                camera[i].GetComponent<Camera>().enabled = true;
-            else
-                camera[i].GetComponent<Camera>().enabled = false;
-        }
+        bClear = in_clear;
     }
 
     public void SetMessage( string in_message)
